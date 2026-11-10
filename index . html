@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>لمسة بيت</title>
+<style>
+:root{--bg:#faf6f0;--card:#fff;--tx:#2b2420;--mu:#7a6e64;--ac:#b5651d;--acx:#fff;--bd:#e8dfd3;--ph:#f3e9dc;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1815;--card:#27221e;--tx:#f1e9df;--mu:#a99d91;--ac:#e09a55;--acx:#1c1815;--bd:#3a332d;--ph:#332c26;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1c1815;--card:#27221e;--tx:#f1e9df;--mu:#a99d91;--ac:#e09a55;--acx:#1c1815;--bd:#3a332d;--ph:#332c26;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Segoe UI",Tahoma,Arial,sans-serif;line-height:1.6;padding-bottom:90px}
+header{text-align:center;padding:28px 16px 12px}
+header h1{margin:0;font-size:2rem;color:var(--ac)}
+header p{margin:4px 0 0;color:var(--mu)}
+.tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:12px 16px}
+.tabs button{border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:8px 16px;border-radius:999px;font:inherit;cursor:pointer}
+.tabs button.on{background:var(--ac);color:var(--acx);border-color:var(--ac)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;max-width:1000px;margin:0 auto;padding:8px 16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.pic{aspect-ratio:1;background:var(--ph);display:flex;align-items:center;justify-content:center;font-size:3.4rem}
+.pic img{width:100%;height:100%;object-fit:cover}
+.info{padding:10px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.nm{font-weight:600}.pr{color:var(--ac);font-weight:700}
+.badge{font-size:.75rem;color:var(--mu)}
+.btn{border:0;background:var(--ac);color:var(--acx);padding:9px 12px;border-radius:10px;font:inherit;cursor:pointer;margin-top:auto}
+.btn.alt{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+.btn.red{background:#b3261e;color:#fff}
+.bar{position:fixed;inset:auto 0 0 0;background:var(--card);border-top:1px solid var(--bd);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;align-items:center;gap:10px;z-index:5}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:9;align-items:flex-end;justify-content:center}
+.sheet.open{display:flex}
+.panel{background:var(--bg);width:100%;max-width:520px;max-height:85%;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd)}
+.q button{width:28px;height:28px;border-radius:50%;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer}
+input,select,textarea{width:100%;font:inherit;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)}
+.adm{background:var(--ph);border:1px dashed var(--ac);border-radius:12px;max-width:968px;margin:8px auto;padding:12px;display:none;gap:8px;flex-wrap:wrap;align-items:center}
+.admon .adm{display:flex}
+.edit{display:none;flex-direction:column;gap:6px}
+.admon .edit{display:flex}.admon .view{display:none}
+.empty{text-align:center;color:var(--mu);padding:30px}
+</style>
+</head>
+<body>
+<header><h1>🏠 لمسة بيت</h1><p>مستلزمات مطبخ وشغل هاند ميد</p></header>
+<div class="adm" id="adm">
+  <strong>وضع التعديل</strong>
+  <button class="btn" id="addP">+ منتج جديد</button>
+  <button class="btn alt" id="copyD">نسخ البيانات</button>
+  <button class="btn alt" id="resetD">إعادة الضبط</button>
+  <small style="flex-basis:100%;color:var(--mu)">التعديلات بتتحفظ على جهازك إنت بس. عشان الزباين يشوفوها، ابعت لي «نسخ البيانات» والصور وأنا أنشرها.</small>
+</div>
+<div class="tabs" id="tabs"></div>
+<div class="grid" id="grid"></div>
+
+<div class="bar"><span id="sum">السلة فاضية</span><button class="btn" id="openCart">عرض السلة</button></div>
+<div class="sheet" id="sheet"><div class="panel">
+  <h3 style="margin-top:0">سلة الطلبات</h3>
+  <div id="items"></div>
+  <p><strong id="tot"></strong></p>
+  <input id="cname" placeholder="الاسم" style="margin-bottom:8px">
+  <input id="caddr" placeholder="العنوان" style="margin-bottom:12px">
+  <button class="btn" style="width:100%" id="send">إرسال الطلب على واتساب</button>
+  <button class="btn alt" style="width:100%;margin-top:8px" id="close">رجوع للتسوق</button>
+</div></div>
+
+<script>
+var PHONE="201025517196";
+var CATS={kitchen:"مستلزمات مطبخ",hand:"شغل هاند ميد"};
+var DEF=[
+{id:1,name:"طقم أكواب سيراميك",price:180,cat:"kitchen",emoji:"☕",img:""},
+{id:2,name:"طقم أدوات مطبخ خشب",price:140,cat:"kitchen",emoji:"🥄",img:""},
+{id:3,name:"لوح تقطيع خشب",price:120,cat:"kitchen",emoji:"🔪",img:""},
+{id:4,name:"علب تخزين زجاج",price:200,cat:"kitchen",emoji:"🫙",img:""},
+{id:5,name:"سلة كروشيه",price:150,cat:"hand",emoji:"🧺",img:""},
+{id:6,name:"شمع معطر يدوي",price:90,cat:"hand",emoji:"🕯️",img:""},
+{id:7,name:"مفرش مطرز يدوي",price:220,cat:"hand",emoji:"🧵",img:""},
+{id:8,name:"ميدالية هاند ميد",price:40,cat:"hand",emoji:"🎀",img:""}
+];
+var products=load(),cart={},filter="all";
+function load(){try{var s=localStorage.getItem("lb_products");if(s){var p=JSON.parse(s);if(Array.isArray(p))return p}}catch(e){}return JSON.parse(JSON.stringify(DEF))}
+function save(){try{localStorage.setItem("lb_products",JSON.stringify(products))}catch(e){alert("مساحة التخزين امتلأت، جرّب صور أصغر.")}}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function $(i){return document.getElementById(i)}
+function renderTabs(){
+  var t=[["all","الكل"],["kitchen",CATS.kitchen],["hand",CATS.hand]];
+  $("tabs").innerHTML=t.map(function(x){return '<button data-t="'+x[0]+'" class="'+(filter===x[0]?"on":"")+'">'+x[1]+'</button>'}).join("");
+}
+function renderGrid(){
+  var l=products.filter(function(p){return filter==="all"||p.cat===filter});
+  if(!l.length){$("grid").innerHTML='<div class="empty">مفيش منتجات في القسم ده لسه</div>';return}
+  $("grid").innerHTML=l.map(function(p){
+    var pic=p.img?'<img src="'+p.img+'" alt="">':esc(p.emoji||"🛍️");
+    return '<div class="card" data-id="'+p.id+'"><div class="pic">'+pic+'</div>'+
+    '<div class="info"><div class="view"><div class="nm">'+esc(p.name)+'</div><div class="badge">'+CATS[p.cat]+'</div><div class="pr">'+Number(p.price)+' ج.م</div></div>'+
+    '<div class="edit"><input data-f="name" value="'+esc(p.name)+'" placeholder="اسم المنتج"><input data-f="price" type="number" value="'+Number(p.price)+'" placeholder="السعر">'+
+    '<select data-f="cat"><option value="kitchen"'+(p.cat==="kitchen"?" selected":"")+'>'+CATS.kitchen+'</option><option value="hand"'+(p.cat==="hand"?" selected":"")+'>'+CATS.hand+'</option></select>'+
+    '<input data-f="img" type="file" accept="image/*"><button class="btn red" data-del="1">حذف</button></div>'+
+    '<button class="btn view" data-add="1">أضف للسلة</button></div></div>';
+  }).join("");
+}
+function count(){var n=0,t=0;products.forEach(function(p){var q=cart[p.id]||0;n+=q;t+=q*p.price});return[n,t]}
+function renderCart(){
+  var c=count();
+  $("sum").textContent=c[0]?c[0]+" منتج • "+c[1]+" ج.م":"السلة فاضية";
+  var h="";products.forEach(function(p){var q=cart[p.id];if(q)h+='<div class="row"><span>'+esc(p.name)+'<br><small>'+p.price+' ج.م</small></span><span class="q"><button data-m="'+p.id+'">−</button> '+q+' <button data-p="'+p.id+'">+</button></span></div>'});
+  $("items").innerHTML=h||'<div class="empty">السلة فاضية</div>';
+  $("tot").textContent=c[0]?"الإجمالي: "+c[1]+" ج.م":"";
+}
+$("tabs").onclick=function(e){var t=e.target.getAttribute("data-t");if(t){filter=t;renderTabs();renderGrid()}};
+$("grid").onclick=function(e){
+  var card=e.target.closest(".card");if(!card)return;var id=+card.getAttribute("data-id");
+  if(e.target.getAttribute("data-add")){cart[id]=(cart[id]||0)+1;renderCart()}
+  if(e.target.getAttribute("data-del")&&confirm("حذف المنتج؟")){products=products.filter(function(p){return p.id!==id});save();renderGrid();renderCart()}
+};
+$("grid").onchange=function(e){
+  var card=e.target.closest(".card");if(!card)return;var id=+card.getAttribute("data-id"),f=e.target.getAttribute("data-f");
+  var p=products.filter(function(x){return x.id===id})[0];if(!p||!f)return;
+  if(f==="img"){var file=e.target.files[0];if(!file)return;var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(1,600/Math.max(im.width,im.height)),cv=document.createElement("canvas");cv.width=im.width*s;cv.height=im.height*s;cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);p.img=cv.toDataURL("image/jpeg",.75);save();renderGrid()};im.src=r.result};r.readAsDataURL(file);return}
+  p[f]=f==="price"?(Number(e.target.value)||0):e.target.value;save();renderCart();
+};
+$("items").onclick=function(e){var m=e.target.getAttribute("data-m"),p=e.target.getAttribute("data-p");
+  if(p)cart[p]=(cart[p]||0)+1;if(m){cart[m]=(cart[m]||1)-1;if(cart[m]<=0)delete cart[m]}renderCart()};
+$("openCart").onclick=function(){$("sheet").classList.add("open")};
+$("close").onclick=function(){$("sheet").classList.remove("open")};
+$("send").onclick=function(){
+  var c=count();if(!c[0]){alert("السلة فاضية");return}
+  var m="السلام عليكم، عايز أطلب من لمسة بيت:\n";
+  products.forEach(function(p){var q=cart[p.id];if(q)m+="- "+p.name+" × "+q+" = "+(q*p.price)+" ج.م\n"});
+  m+="\nالإجمالي: "+c[1]+" ج.م";
+  if($("cname").value)m+="\nالاسم: "+$("cname").value;
+  if($("caddr").value)m+="\nالعنوان: "+$("caddr").value;
+  window.open("https://wa.me/"+PHONE+"?text="+encodeURIComponent(m),"_blank");
+};
+$("addP").onclick=function(){var id=Date.now();products.unshift({id:id,name:"منتج جديد",price:0,cat:filter==="hand"?"hand":"kitchen",emoji:"🛍️",img:""});save();renderGrid()};
+$("copyD").onclick=function(){var t=JSON.stringify(products);try{navigator.clipboard.writeText(t).then(function(){alert("تم النسخ. ابعته لي في الشات.")},function(){prompt("انسخ البيانات:",t)})}catch(e){prompt("انسخ البيانات:",t)}};
+$("resetD").onclick=function(){if(confirm("ترجّع المنتجات التجريبية؟")){try{localStorage.removeItem("lb_products")}catch(e){}products=JSON.parse(JSON.stringify(DEF));renderGrid()}};
+function mode(){document.body.classList.toggle("admon",location.hash==="#admin")}
+window.addEventListener("hashchange",mode);mode();
+renderTabs();renderGrid();renderCart();
+</script>
+</body>
+</html>
